@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <header>
+    <h1>Turing test</h1>
+  </header>
+  <main>
+    <section id="converstation-container">
+      <ul id="converstation">
+
+      </ul>
+    </section>
+    <section id="input-container">
+      <label for="convo-name">Name:</label>
+      <input id="convo-name" type="text">
+      <label for="convo-input">Message:</label>
+      <input id="convo-input" type="text">
+      <button id="convo-button">Send!</button>
+    </section>
+  </main>
+
+  <script>
+    const elements = {
+      convo: document.querySelector("#converstation"),
+      name: document.querySelector("#convo-name"),
+      input: document.querySelector("#convo-input"),
+      button: document.querySelector("#convo-button")
+    }
+
+    elements.button.addEventListener("click", async () => {
+      try {
+        const inputValue = elements.input.value;
+        console.log(inputValue);
+        elements.input.value = "";
+
+        const response = await fetch("/", {
+          method: "POST",
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: JSON.stringify({
+            actor: elements.name.value,
+            message: inputValue
+          })
+        });
+
+        const jsonData = await response.json();
+        elements.convo.innerHTML = "";
+
+        for (const message of jsonData) {
+          elements.convo.innerHTML += `<li><strong>${message.actor}:</strong>${message.message}</li>`
+
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    async function fetchMessages() {
+      const response = await fetch("/convo", {
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      });
+
+      const jsonData = await response.json();
+      elements.convo.innerHTML = "";
+
+      for (const message of jsonData) {
+        elements.convo.innerHTML += `<li><strong>${message.actor}:</strong>${message.message}</li>`
+
+      }
+    }
+
+    setInterval(fetchMessages, 1000);
+    fetchMessages();
+  </script>
+</body>
+
+</html>
